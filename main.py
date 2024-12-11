@@ -5,6 +5,7 @@ import os
 import time
 import subprocess
 import platform
+import socket
 from fake_useragent import UserAgent
 from stem.control import Controller
 from stem import Signal
@@ -182,6 +183,96 @@ def send_post_request(payload):
         print(Log.success + f" {random_char} {Fore.LIGHTWHITE_EX}-{Fore.LIGHTGREEN_EX} POST {Fore.LIGHTWHITE_EX}- ESTADO :{Fore.LIGHTCYAN_EX} {response.status_code} {Fore.LIGHTWHITE_EX}- {payload}")
     except Exception as e:
         print(Log.error + f" {Fore.LIGHTWHITE_EX}Error en solicitud POST: {e}")
+
+# Función para pruebas de stress HTTP/HTTPS
+def stress_test(url, num_requests):
+    with ThreadPoolExecutor(max_workers=num_requests) as executor:
+        futures = [executor.submit(requests.get, url, proxies=tor_proxy, headers=headers, cookies=cookies) for _ in range(num_requests)]
+        for future in futures:
+            try:
+                response = future.result()
+                print(f"Status: {response.status_code} - {response.url}")
+            except Exception as e:
+                print(f"Error: {e}")
+
+# Función para pruebas de inyección SQL básica
+def sql_injection_test(url, payload):
+    try:
+        response = requests.post(url, data={'data': payload}, proxies=tor_proxy, headers=headers, cookies=cookies)
+        if "error" in response.text.lower() or "syntax" in response.text.lower():
+            print(Log.success + f" {Fore.LIGHTWHITE_EX}Posible vulnerabilidad SQL detectada en {url} con payload: {payload}")
+        else:
+            print(Log.wait + f" {Fore.LIGHTWHITE_EX}No se detectó vulnerabilidad con payload: {payload}")
+    except Exception as e:
+        print(Log.error + f" {Fore.LIGHTWHITE_EX}Error en prueba de inyección SQL: {e}")
+
+# Función para pruebas de fuzzing
+def fuzzing_test(url, payloads):
+    for payload in payloads:
+        try:
+            response = requests.post(url, data={'data': payload}, proxies=tor_proxy, headers=headers, cookies=cookies)
+            if response.status_code >= 400:
+                print(Log.success + f" {Fore.LIGHTWHITE_EX}Respuesta inesperada con payload: {payload} - Código: {response.status_code}")
+            else:
+                print(Log.wait + f" {Fore.LIGHTWHITE_EX}Payload {payload} no causó errores.")
+        except Exception as e:
+            print(Log.error + f" {Fore.LIGHTWHITE_EX}Error en prueba de fuzzing: {e}")
+
+# Función para escaneo de cabeceras HTTP
+def scan_http_headers(url):
+    try:
+        response = requests.get(url, proxies=tor_proxy, headers=headers, cookies=cookies)
+        headers = response.headers
+        if 'X-Frame-Options' not in headers:
+            print(Log.error + f" {Fore.LIGHTWHITE_EX}Falta la cabecera X-Frame-Options en {url}")
+        if 'Content-Security-Policy' not in headers:
+            print(Log.error + f" {Fore.LIGHTWHITE_EX}Falta la cabecera Content-Security-Policy en {url}")
+        if 'Strict-Transport-Security' not in headers:
+            print(Log.error + f" {Fore.LIGHTWHITE_EX}Falta la cabecera Strict-Transport-Security en {url}")
+    except Exception as e:
+        print(Log.error + f" {Fore.LIGHTWHITE_EX}Error al escanear cabeceras HTTP: {e}")
+
+# Función para pruebas de inyección CRLF
+def crlf_injection_test(url, payload):
+    try:
+        response = requests.get(f"{url}{payload}", proxies=tor_proxy, headers=headers, cookies=cookies)
+        if "Set-Cookie" in response.headers:
+            print(Log.success + f" {Fore.LIGHTWHITE_EX}Posible vulnerabilidad CRLF detectada en {url} con payload: {payload}")
+        else:
+            print(Log.wait + f" {Fore.LIGHTWHITE_EX}No se detectó vulnerabilidad con payload: {payload}")
+    except Exception as e:
+        print(Log.error + f" {Fore.LIGHTWHITE_EX}Error en prueba de inyección CRLF: {e}")
+
+# Función para escaneo de puertos
+def port_scan(host, ports):
+    for port in ports:
+        try:
+            with socket.create_connection((host, port), timeout=1):
+                print(Log.success + f" {Fore.LIGHTWHITE_EX}Puerto {port} abierto en {host}")
+        except:
+            print(Log.wait + f" {Fore.LIGHTWHITE_EX}Puerto {port} cerrado en {host}")
+
+# Función para escaneo de subdominios
+def subdomain_scan(domain, wordlist):
+    for sub in wordlist:
+        url = f"http://{sub}.{domain}"
+        try:
+            response = requests.get(url, proxies=tor_proxy, headers=headers, cookies=cookies)
+            if response.status_code < 400:
+                print(Log.success + f" {Fore.LIGHTWHITE_EX}Subdominio encontrado: {url}")
+        except:
+            pass
+
+# Función para detección de WAF
+def detect_waf(url):
+    try:
+        response = requests.get(url, proxies=tor_proxy, headers=headers, cookies=cookies)
+        if "X-WAF" in response.headers or "WAF" in response.headers:
+            print(Log.success + f" {Fore.LIGHTWHITE_EX}WAF detectado en {url}")
+        else:
+            print(Log.wait + f" {Fore.LIGHTWHITE_EX}No se detectó WAF en {url}")
+    except Exception as e:
+        print(Log.error + f" {Fore.LIGHTWHITE_EX}Error al detectar WAF: {e}")
 
 # Función para verificar si Tor está instalado
 def check_tor_installed():
