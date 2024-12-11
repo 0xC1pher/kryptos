@@ -56,5 +56,12 @@ root~# sudo systemctl restart tor
 - Si tienes una VPN + PROXY TOR
 
 ##El anonimato será de 95-99%.
-
+## Mas funciones 
+Ahora incluye 
+- pruebas de stress 
+- Inyecciones SQL 
+- Fuzzing 
+- Escaneo de cabeceras 
+- Detección de WAF
+- Escaneo de puertos y subdominios.
 **Los encabezados hacen que el rastreo sea difícil, pero si usas una VPN + TOR, será complejo.**
