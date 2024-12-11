@@ -285,15 +285,76 @@ def check_tor_installed():
     except subprocess.CalledProcessError:
         return False
 
-# Función para instalar Tor en Linux
+# Función para instalar Tor en Linux según la distribución
 def install_tor_linux():
+    distro = detect_linux_distro()
+    if distro == "arch":
+        install_with_yay()
+    elif distro == "debian" or distro == "ubuntu":
+        install_with_apt()
+    elif distro == "fedora":
+        install_with_dnf()
+    elif distro == "centos" or distro == "rhel":
+        install_with_yum()
+    else:
+        print(f"{Fore.RED}Distribución no soportada. Instale Tor manualmente.{Fore.RESET}")
+
+# Detectar la distribución de Linux
+def detect_linux_distro():
     try:
-        print(f"{Fore.YELLOW}Instalando Tor...{Fore.RESET}")
+        with open("/etc/os-release", "r") as f:
+            for line in f:
+                if line.startswith("ID="):
+                    return line.split("=")[1].strip().lower()
+    except FileNotFoundError:
+        return "unknown"
+
+# Instalar con yay (Arch Linux)
+def install_with_yay():
+    try:
+        print(f"{Fore.YELLOW}Instalando Tor con yay...{Fore.RESET}")
+        subprocess.check_call(["yay", "-S", "--noconfirm", "tor"])
+        print(f"{Fore.GREEN}Tor instalado correctamente con yay.{Fore.RESET}")
+    except FileNotFoundError:
+        print(f"{Fore.RED}yay no está instalado. Instalando con pacman...{Fore.RESET}")
+        install_with_pacman()
+
+# Instalar con pacman (Arch Linux)
+def install_with_pacman():
+    try:
+        print(f"{Fore.YELLOW}Instalando Tor con pacman...{Fore.RESET}")
+        subprocess.check_call(["sudo", "pacman", "-S", "--noconfirm", "tor"])
+        print(f"{Fore.GREEN}Tor instalado correctamente con pacman.{Fore.RESET}")
+    except Exception as e:
+        print(f"{Fore.RED}Error al instalar Tor con pacman: {e}{Fore.RESET}")
+
+# Instalar con apt (Debian/Ubuntu)
+def install_with_apt():
+    try:
+        print(f"{Fore.YELLOW}Instalando Tor con apt...{Fore.RESET}")
         subprocess.check_call(["sudo", "apt-get", "update"])
         subprocess.check_call(["sudo", "apt-get", "install", "-y", "tor"])
-        print(f"{Fore.GREEN}Tor instalado correctamente.{Fore.RESET}")
+        print(f"{Fore.GREEN}Tor instalado correctamente con apt.{Fore.RESET}")
     except Exception as e:
-        print(f"{Fore.RED}Error al instalar Tor: {e}{Fore.RESET}")
+        print(f"{Fore.RED}Error al instalar Tor con apt: {e}{Fore.RESET}")
+
+# Instalar con dnf (Fedora)
+def install_with_dnf():
+    try:
+        print(f"{Fore.YELLOW}Instalando Tor con dnf...{Fore.RESET}")
+        subprocess.check_call(["sudo", "dnf", "install", "-y", "tor"])
+        print(f"{Fore.GREEN}Tor instalado correctamente con dnf.{Fore.RESET}")
+    except Exception as e:
+        print(f"{Fore.RED}Error al instalar Tor con dnf: {e}{Fore.RESET}")
+
+# Instalar con yum (CentOS/RHEL)
+def install_with_yum():
+    try:
+        print(f"{Fore.YELLOW}Instalando Tor con yum...{Fore.RESET}")
+        subprocess.check_call(["sudo", "yum", "install", "-y", "tor"])
+        print(f"{Fore.GREEN}Tor instalado correctamente con yum.{Fore.RESET}")
+    except Exception as e:
+        print(f"{Fore.RED}Error al instalar Tor con yum: {e}{Fore.RESET}")
 
 # Entrada del usuario
 title()
