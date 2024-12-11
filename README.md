@@ -1,8 +1,8 @@
 <div align="center">
-  <h2 align="center">TORNET</h2>
+  <h2 align="center">KRYPTOS</h2>
 
   <p align="center">
-    Herramienta DDoS (<b> por D3M3T0R </b>)
+    Herramienta DDoS (<b> por 0X4171341 </b>)
     <br />
     <br />
     <a href="https://github.com/RetrO-M/TorNet/issues">⚠️ Reportar Error</a>
